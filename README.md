@@ -1,5 +1,8 @@
 # PAIP 2020
 
+## Environment Setup
+
+
 To use the code, the user needs to set te environment variable to access the data. At your ~/.bashrc add:
 ```shell script
 export PAIP2020_DATA_PATH='/path/to/data/PAIP2020/'
@@ -9,6 +12,30 @@ Also, the user needs to to pre-install a feew packages:
 ```shell script
 $ pip install -r requirements.txt
 ```
+
+#### Data Preparation
+
+We have to download provided SWI files with their xml mask and unzip them into `PAIP2020_DATA_PATH` creating
+for them 'Train/SWI/' and 'Train/annotation/' folders respectively. Now we generate the .tif mask files from the .xml
+running `python3 preprocess/xml2mask.py`. This will create a 'Train/mask_img_l2' folder with the generated masks.
+
+Finally we will generate the patches: `python3 preprocess/gen_patches.py`.
+```shell script
+usage: gen_patches.py [-h] [--patch_len PATCH_LEN] [--stride_len STRIDE_LEN]
+                      [--slide_level SLIDE_LEVEL]
+
+PAIP2020 Patch Generator
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --patch_len PATCH_LEN
+                        Patch size: patch_len x patch_len
+  --stride_len STRIDE_LEN
+                        Stride of sliding window. Default patch_len // 4
+  --slide_level SLIDE_LEVEL
+                        Which level dimension
+```
+
 
 ## Data Description
 
