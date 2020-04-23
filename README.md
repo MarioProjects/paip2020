@@ -39,7 +39,7 @@ optional arguments:
 
 ## Data Description
 
-Tenemos 47 imagenes de tipo svs. A whole-slide image is a digital representation of a microscopic slide, 
+We have 47 svs images. A whole-slide image is a digital representation of a microscopic slide, 
 typically at a very high level of magnification, 20x. As a result of this high magnification, 
 whole slide images are typically very large in size. 
 
@@ -50,12 +50,11 @@ scanned strips into a resulting whole-slide image.
 This is a pyramidal, tiled format, where the massive slide is composed of a large number 
 of constituent tiles.
 
-Estas imagenes cuentan con 4 diferentes niveles/dimensiones de resolución como se muestra en la 
-siguiente imagen.  
+Our images have 4 levels/dimensions as shows next figure.
 
 ![WSI Structure](images/wsi_structure.png "WSI Structure")
 
-Por ejemplo, la imagen 'training_data_41.svs' cuenta con los niveles 
+For example, the image 'training_data_41.svs' has the next levels: 
 `((121512, 93068), (30378, 23267), (7594, 5816), (3797, 2908))`
 
 #### Data Visualization
