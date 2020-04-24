@@ -2,10 +2,6 @@ import itertools
 
 import numpy as np
 
-from torchvision import transforms
-from torch.utils.data import Dataset
-from torch.utils.data import DataLoader
-
 
 def wsi_stride_splitting(wsi_h, wsi_w, patch_len, stride_len):
     """
@@ -88,35 +84,3 @@ def gen_patch_wmap(slide_img, coors_arr, patch_len):
     patch_arr = np.asarray(patch_list).astype(np.float32)
 
     return patch_arr, wmap
-
-
-class PatchDataset(Dataset):
-    """
-    Dataset for slides. Each would be splitted into multiple patches.
-    Prediction is made on these splitted patches.
-    """
-
-    def __init__(self, patch_arr, mask_arr=None, normalize=True):
-        self.patches = patch_arr
-        self.masks = mask_arr
-
-        img_mean = (0.765, 0.547, 0.692)
-        img_std = (0.092, 0.119, 0.098)
-
-        transform_list = [transforms.ToTensor(), ]
-        if normalize:
-            transform_list.append(transforms.Normalize(img_mean, img_std))
-        self.transform = transforms.Compose(transform_list)
-
-    def __len__(self):
-        return self.patches.shape[0]
-
-    def __getitem__(self, idx):
-        patch = self.patches[idx, ...]
-        if self.transform:
-            patch = self.transform(patch)
-        if isinstance(self.masks, np.ndarray):
-            mask = np.expand_dims(self.masks[idx, ...], axis=0)
-            return patch, mask
-        else:
-            return patch

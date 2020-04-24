@@ -6,7 +6,7 @@ from skimage.transform import resize
 
 def mask_loader(fn, verbose=False):
     """
-    This is a simplest loader for the given tif mask labels, which are compressed in 'LZW' format for logistic convenience.
+    This is a simplest loader for the given tif mask labels, which are compressed in 'LZW' format.
     Scikit-image library can automatically decompress and load them on your physical memory.
     """
     assert (os.path.isfile(fn))

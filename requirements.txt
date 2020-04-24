@@ -7,3 +7,7 @@ opencv-python~=4.1.2.30
 scikit-image~=0.16.2
 pandas~=0.25.3
 tqdm~=4.41.0
+albumentations~=0.4.3
+pytorchcv~=0.0.53
+torchcontrib~=0.0.2
+pydaily~=0.4.2
