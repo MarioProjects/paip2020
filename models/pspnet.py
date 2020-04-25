@@ -62,7 +62,7 @@ def psp_model_selector(model_name, num_classes, in_size, aux):
     elif model_name == "pspnet_resnetd101b_voc_encoder":
         pretrained = "voc_encoder"
     else:
-        assert False, "Uknown pretrained configuration for PSPNet: {}".format(model_name)
+        assert False, "Unknown pretrained configuration for PSPNet: {}".format(model_name)
 
     model = PSPNetResnetD101b(pretrained=pretrained, num_classes=num_classes, in_size=in_size, aux=aux)
 

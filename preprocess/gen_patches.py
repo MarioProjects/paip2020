@@ -34,6 +34,14 @@ else:
 
 
 def classify_mask(mask):
+    """
+    Mask categorization depending on their values
+    :param mask: Mask image
+    :return: (string)
+        'background' if no tumour label in the mask
+        'tumour' if only tumour label in the mask
+        'border' if tumour and background label in the mask
+    """
     if (np.unique(mask) == np.array([0])).all():
         return "background"
     elif (np.unique(mask) == np.array([1])).all():
@@ -41,7 +49,7 @@ def classify_mask(mask):
     elif (np.unique(mask) == np.array([0, 1])).all():
         return "border"
     else:
-        assert False, "Uknown mask status. Values: {}".format(np.unique(mask))
+        assert False, "Unknown mask status. Values: {}".format(np.unique(mask))
 
 
 print("-- SETTINGS --")
@@ -112,7 +120,10 @@ indx = 0
 for subdir, dirs, files in list(os.walk(base_patch_dir)):
     for file in files:
         if file.endswith(".jpg"):  # Mask have same path but .png extension
-            relative_path_patch = "Train/patches_level{}_len{}_stride{}".format(p_level, patch_len, stride_len) + file
+            relative_path_patch = os.path.join(
+                "/".join(subdir.split("/")[-3:]),
+                file
+            )
             case = subdir.split("/")[-1]
 
             train_info.append({

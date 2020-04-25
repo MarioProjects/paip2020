@@ -79,6 +79,8 @@ def get_scheduler(scheduler_name, optimizer, epochs=40, min_lr=0.002, max_lr=0.0
         return torch.optim.lr_scheduler.ReduceLROnPlateau(optimizer, cooldown=6, factor=0.1, patience=12)
     elif scheduler_name == "one_cycle_lr":
         return OneCycleLR(optimizer, num_steps=epochs, lr_range=(min_lr, max_lr))
+    elif scheduler_name == "constant":
+        return torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[9999], gamma=0.1)
     else:
         assert False, "Unknown scheduler: {}".format(scheduler_name)
 
@@ -94,12 +96,14 @@ def scheduler_step(optimizer, scheduler, metric, args):
     """
     if args.apply_swa:
         optimizer.step()
-    if args.scheduler_name == "steps":
+    if args.scheduler == "steps":
         scheduler.step()
-    elif args.scheduler_name == "plateau":
+    elif args.scheduler == "plateau":
         scheduler.step(metric)
-    elif args.scheduler_name == "one_cycle_lr":
+    elif args.scheduler == "one_cycle_lr":
         scheduler.step()
+    elif args.scheduler == "constant":
+        pass  # No modify learning rate
 
 
 def get_criterion(criterion_type, weights_criterion='default'):
@@ -111,28 +115,26 @@ def get_criterion(criterion_type, weights_criterion='default'):
         (list) Subcriterions
         (list) Weights for each criterion
     """
-    if criterion_type == "ce":
-        return [nn.CrossEntropyLoss().cuda()], [1]
-    elif criterion_type == "bce_dice":
+    if criterion_type == "bce_dice":
         criterion1 = nn.BCEWithLogitsLoss().cuda()
         criterion2 = SoftDiceLoss().cuda()
         criterion3 = SoftInvDiceLoss().cuda()
         criterion = [criterion1, criterion2, criterion3]
-        if weights_criterion == "default": default_weights_criterion = [0.55, 0.35, 0.1]
+        default_weights_criterion = [0.55, 0.35, 0.1]
     elif criterion_type == "bce_dice_border":
         criterion1 = nn.BCEWithLogitsLoss().cuda()
         criterion2 = SoftDiceLoss().cuda()
         criterion3 = SoftInvDiceLoss().cuda()
         criterion4 = BCEDicePenalizeBorderLoss().cuda()
         criterion = [criterion1, criterion2, criterion3, criterion4]
-        if weights_criterion == "default": default_weights_criterion = [0.5, 0.2, 0.1, 0.2]
+        default_weights_criterion = [0.5, 0.2, 0.1, 0.2]
     elif criterion_type == "bce_dice_ac":
         criterion1 = nn.BCEWithLogitsLoss().cuda()
         criterion2 = SoftDiceLoss().cuda()
         criterion3 = SoftInvDiceLoss().cuda()
         criterion4 = ActiveContourLoss().cuda()
         criterion = [criterion1, criterion2, criterion3, criterion4]
-        if weights_criterion == "default": default_weights_criterion = [0.3, 0.4, 0.2, 0.3]
+        default_weights_criterion = [0.3, 0.4, 0.2, 0.3]
     else:
         assert False, "Unknown criterion: {}".format(criterion_type)
 
@@ -218,10 +220,10 @@ def train_step(train_loader, model, criterion, weights_criterion, optimizer):
     return np.mean(train_loss)
 
 
-def val_step(val_loader, model, criterion, weights_criterion, binary_threshold, batch_size):
+def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold, batch_size):
     """
     Perform a validation step
-    :param val_loader: (Dataset) Validation dataset loader
+    :param val_dataset: (Dataset) Validation dataset loader
     :param model: Model used in training
     :param criterion: Choosed criterion
     :param weights_criterion: Choosed criterion weights
@@ -232,7 +234,7 @@ def val_step(val_loader, model, criterion, weights_criterion, binary_threshold, 
     ious, dices, val_loss = [], [], []
     model.eval()
     with torch.no_grad():
-        slide_names = val_loader.get_slide_filenames()
+        slide_names = val_dataset.get_slide_filenames()
 
         for num, (cur_slide_path, cur_mask_path) in enumerate(slide_names):
             # Load WSI
@@ -240,24 +242,24 @@ def val_step(val_loader, model, criterion, weights_criterion, binary_threshold, 
 
             wsi_head = openslide.OpenSlide(cur_slide_path)
             slide_img = wsi_head.read_region(
-                (0, 0), val_loader.slide_level, wsi_head.level_dimensions[val_loader.slide_level]
+                (0, 0), val_dataset.slide_level, wsi_head.level_dimensions[val_dataset.slide_level]
             )
-            pred_h = wsi_head.level_dimensions[val_loader.slide_level][1]
-            pred_w = wsi_head.level_dimensions[val_loader.slide_level][0]
+            pred_h = wsi_head.level_dimensions[val_dataset.slide_level][1]
+            pred_w = wsi_head.level_dimensions[val_dataset.slide_level][0]
             slide_img = np.asarray(slide_img)[:, :, :3]  # Quitamos el canal alpha ya que no tiene información relevante
 
-            coors_arr = wsi_stride_splitting(pred_h, pred_w, val_loader.patch_len, val_loader.stride_len)
-            patch_arr, wmap = gen_patch_wmap(slide_img, coors_arr, val_loader.patch_len)
+            coors_arr = wsi_stride_splitting(pred_h, pred_w, val_dataset.patch_len, val_dataset.stride_len)
+            patch_arr, wmap = gen_patch_wmap(slide_img, coors_arr, val_dataset.patch_len)
 
-            patch_dset = PatchArrayDataset(patch_arr, mask_arr=None, normalize=val_loader.normalize)
-            patch_loader = DataLoader(patch_dset, batch_size=batch_size, shuffle=False, num_workers=4, drop_last=False)
+            patch_dset = PatchArrayDataset(patch_arr, val_dataset.transform, val_dataset.img_transform)
+            patch_loader = DataLoader(patch_dset, batch_size=batch_size, shuffle=False, drop_last=False)
             pred_map = np.zeros_like(wmap).astype(np.float32)
 
             for ind, patches in enumerate(patch_loader):
                 inputs = patches.cuda()
                 with torch.no_grad():
                     outputs = model(inputs)
-                    preds = F.sigmoid(outputs)
+                    preds = torch.sigmoid(outputs)
                     preds = torch.squeeze(preds, dim=1).data.cpu().numpy()
                     if (ind + 1) * batch_size <= len(coors_arr):
                         patch_coors = coors_arr[ind * batch_size:(ind + 1) * batch_size]
@@ -265,14 +267,17 @@ def val_step(val_loader, model, criterion, weights_criterion, binary_threshold, 
                         patch_coors = coors_arr[ind * batch_size:]
                     for ind_coor, coor in enumerate(patch_coors):
                         ph, pw = coor[0], coor[1]
-                        pred_map[ph:ph + val_loader.patch_len, pw:pw + val_loader.patch_len] += preds[ind_coor]
+                        pred_map[ph:ph + val_dataset.patch_len, pw:pw + val_dataset.patch_len] += preds[ind_coor]
 
             prob_pred = np.divide(pred_map, wmap)
             y_pred = (prob_pred > binary_threshold).astype(np.uint8)
 
-            val_loss.append(calculate_loss(mask, y_pred, criterion, weights_criterion).item())
             ious.append(jaccard_coef(mask, y_pred))
             dices.append(jaccard_coef(mask, y_pred))
+            val_loss.append(
+                calculate_loss(torch.from_numpy(mask.astype(np.float32)), torch.from_numpy(prob_pred),
+                               criterion, weights_criterion)
+            )
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()

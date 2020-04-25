@@ -1,0 +1,296 @@
+-- SETTINGS --
+patch_len: 256
+stride_len: -1
+slide_level: 2
+
+--- Generatin Patches for training_data_41 (1/47)---
+Mask shape: (5816, 7594)
+Image shape: (5816, 7594, 3)
+Total number of patches: 10208.
+Patches Info: {'background': 8299, 'tumour': 877, 'border': 1032}
+
+--- Generatin Patches for training_data_38 (2/47)---
+Mask shape: (5816, 7594)
+Image shape: (5816, 7594, 3)
+Total number of patches: 10208.
+Patches Info: {'background': 10011, 'tumour': 0, 'border': 197}
+
+--- Generatin Patches for training_data_36 (3/47)---
+Mask shape: (5242, 8341)
+Image shape: (5242, 8341, 3)
+Total number of patches: 10112.
+Patches Info: {'background': 8416, 'tumour': 721, 'border': 975}
+
+--- Generatin Patches for training_data_10 (4/47)---
+Mask shape: (5594, 7594)
+Image shape: (5594, 7594, 3)
+Total number of patches: 9860.
+Patches Info: {'background': 8206, 'tumour': 883, 'border': 771}
+
+--- Generatin Patches for training_data_08 (5/47)---
+Mask shape: (4974, 6847)
+Image shape: (4974, 6847, 3)
+Total number of patches: 7800.
+Patches Info: {'background': 5183, 'tumour': 1675, 'border': 942}
+
+--- Generatin Patches for training_data_34 (6/47)---
+Mask shape: (4316, 6723)
+Image shape: (4316, 6723, 3)
+Total number of patches: 6695.
+Patches Info: {'background': 4006, 'tumour': 978, 'border': 1711}
+
+--- Generatin Patches for training_data_11 (7/47)---
+Mask shape: (5004, 6847)
+Image shape: (5004, 6847, 3)
+Total number of patches: 7904.
+Patches Info: {'background': 6645, 'tumour': 385, 'border': 874}
+
+--- Generatin Patches for training_data_24 (8/47)---
+Mask shape: (5797, 7719)
+Image shape: (5797, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 7071, 'tumour': 1854, 'border': 1459}
+
+--- Generatin Patches for training_data_28 (9/47)---
+Mask shape: (5806, 7594)
+Image shape: (5806, 7594, 3)
+Total number of patches: 10208.
+Patches Info: {'background': 9254, 'tumour': 352, 'border': 602}
+
+--- Generatin Patches for training_data_22 (10/47)---
+Mask shape: (5817, 7843)
+Image shape: (5817, 7843, 3)
+Total number of patches: 10560.
+Patches Info: {'background': 6957, 'tumour': 1438, 'border': 2165}
+
+--- Generatin Patches for training_data_06 (11/47)---
+Mask shape: (5289, 7221)
+Image shape: (5289, 7221, 3)
+Total number of patches: 8800.
+Patches Info: {'background': 4770, 'tumour': 2579, 'border': 1451}
+
+--- Generatin Patches for training_data_35 (12/47)---
+Mask shape: (5356, 5976)
+Image shape: (5356, 5976, 3)
+Total number of patches: 7371.
+Patches Info: {'background': 4943, 'tumour': 1362, 'border': 1066}
+
+--- Generatin Patches for training_data_32 (13/47)---
+Mask shape: (5816, 7594)
+Image shape: (5816, 7594, 3)
+Total number of patches: 10208.
+Patches Info: {'background': 8882, 'tumour': 564, 'border': 762}
+
+--- Generatin Patches for training_data_46 (14/47)---
+Mask shape: (5818, 8092)
+Image shape: (5818, 8092, 3)
+Total number of patches: 10912.
+Patches Info: {'background': 8247, 'tumour': 1224, 'border': 1441}
+
+--- Generatin Patches for training_data_14 (15/47)---
+Mask shape: (5815, 7221)
+Image shape: (5815, 7221, 3)
+Total number of patches: 9680.
+Patches Info: {'background': 8220, 'tumour': 396, 'border': 1064}
+
+--- Generatin Patches for training_data_26 (16/47)---
+Mask shape: (5817, 7719)
+Image shape: (5817, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 9251, 'tumour': 255, 'border': 878}
+
+--- Generatin Patches for training_data_18 (17/47)---
+Mask shape: (5214, 6100)
+Image shape: (5214, 6100, 3)
+Total number of patches: 7347.
+Patches Info: {'background': 4818, 'tumour': 1246, 'border': 1283}
+
+--- Generatin Patches for training_data_03 (18/47)---
+Mask shape: (5794, 6972)
+Image shape: (5794, 6972, 3)
+Total number of patches: 9328.
+Patches Info: {'background': 8112, 'tumour': 506, 'border': 710}
+
+--- Generatin Patches for training_data_45 (19/47)---
+Mask shape: (5415, 5602)
+Image shape: (5415, 5602, 3)
+Total number of patches: 6970.
+Patches Info: {'background': 6754, 'tumour': 0, 'border': 216}
+
+--- Generatin Patches for training_data_02 (20/47)---
+Mask shape: (5817, 7719)
+Image shape: (5817, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 8003, 'tumour': 982, 'border': 1399}
+
+--- Generatin Patches for training_data_15 (21/47)---
+Mask shape: (5756, 7719)
+Image shape: (5756, 7719, 3)
+Total number of patches: 10266.
+Patches Info: {'background': 8959, 'tumour': 306, 'border': 1001}
+
+--- Generatin Patches for training_data_30 (22/47)---
+Mask shape: (5819, 8466)
+Image shape: (5819, 8466, 3)
+Total number of patches: 11440.
+Patches Info: {'background': 9430, 'tumour': 1182, 'border': 828}
+
+--- Generatin Patches for training_data_07 (23/47)---
+Mask shape: (5136, 6972)
+Image shape: (5136, 6972, 3)
+Total number of patches: 8268.
+Patches Info: {'background': 6036, 'tumour': 1241, 'border': 991}
+
+--- Generatin Patches for training_data_23 (24/47)---
+Mask shape: (4800, 6349)
+Image shape: (4800, 6349, 3)
+Total number of patches: 6984.
+Patches Info: {'background': 5630, 'tumour': 494, 'border': 860}
+
+--- Generatin Patches for training_data_13 (25/47)---
+Mask shape: (5745, 7345)
+Image shape: (5745, 7345, 3)
+Total number of patches: 9744.
+Patches Info: {'background': 5774, 'tumour': 1821, 'border': 2149}
+
+--- Generatin Patches for training_data_40 (26/47)---
+Mask shape: (5492, 7470)
+Image shape: (5492, 7470, 3)
+Total number of patches: 9462.
+Patches Info: {'background': 8580, 'tumour': 226, 'border': 656}
+
+--- Generatin Patches for training_data_43 (27/47)---
+Mask shape: (5745, 7470)
+Image shape: (5745, 7470, 3)
+Total number of patches: 9918.
+Patches Info: {'background': 8669, 'tumour': 538, 'border': 711}
+
+--- Generatin Patches for training_data_37 (28/47)---
+Mask shape: (5807, 7968)
+Image shape: (5807, 7968, 3)
+Total number of patches: 10736.
+Patches Info: {'background': 8482, 'tumour': 1382, 'border': 872}
+
+--- Generatin Patches for training_data_47 (29/47)---
+Mask shape: (5817, 7719)
+Image shape: (5817, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 8316, 'tumour': 829, 'border': 1239}
+
+--- Generatin Patches for training_data_42 (30/47)---
+Mask shape: (5818, 8217)
+Image shape: (5818, 8217, 3)
+Total number of patches: 11088.
+Patches Info: {'background': 5840, 'tumour': 3698, 'border': 1550}
+
+--- Generatin Patches for training_data_20 (31/47)---
+Mask shape: (4262, 5851)
+Image shape: (4262, 5851, 3)
+Total number of patches: 5696.
+Patches Info: {'background': 1938, 'tumour': 1382, 'border': 2376}
+
+--- Generatin Patches for training_data_04 (32/47)---
+Mask shape: (5815, 7096)
+Image shape: (5815, 7096, 3)
+Total number of patches: 9504.
+Patches Info: {'background': 8923, 'tumour': 82, 'border': 499}
+
+--- Generatin Patches for training_data_29 (33/47)---
+Mask shape: (5816, 7345)
+Image shape: (5816, 7345, 3)
+Total number of patches: 9856.
+Patches Info: {'background': 8491, 'tumour': 466, 'border': 899}
+
+--- Generatin Patches for training_data_31 (34/47)---
+Mask shape: (5817, 7719)
+Image shape: (5817, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 9411, 'tumour': 289, 'border': 684}
+
+--- Generatin Patches for training_data_21 (35/47)---
+Mask shape: (5815, 7096)
+Image shape: (5815, 7096, 3)
+Total number of patches: 9504.
+Patches Info: {'background': 8841, 'tumour': 250, 'border': 413}
+
+--- Generatin Patches for training_data_27 (36/47)---
+Mask shape: (5817, 7843)
+Image shape: (5817, 7843, 3)
+Total number of patches: 10560.
+Patches Info: {'background': 7296, 'tumour': 2078, 'border': 1186}
+
+--- Generatin Patches for training_data_12 (37/47)---
+Mask shape: (5137, 7221)
+Image shape: (5137, 7221, 3)
+Total number of patches: 8580.
+Patches Info: {'background': 5717, 'tumour': 1503, 'border': 1360}
+
+--- Generatin Patches for training_data_39 (38/47)---
+Mask shape: (5776, 7719)
+Image shape: (5776, 7719, 3)
+Total number of patches: 10384.
+Patches Info: {'background': 9394, 'tumour': 345, 'border': 645}
+
+--- Generatin Patches for training_data_33 (39/47)---
+Mask shape: (5783, 6474)
+Image shape: (5783, 6474, 3)
+Total number of patches: 8712.
+Patches Info: {'background': 5541, 'tumour': 1543, 'border': 1628}
+
+--- Generatin Patches for training_data_44 (40/47)---
+Mask shape: (5105, 6598)
+Image shape: (5105, 6598, 3)
+Total number of patches: 7777.
+Patches Info: {'background': 6199, 'tumour': 810, 'border': 768}
+
+--- Generatin Patches for training_data_17 (41/47)---
+Mask shape: (5215, 6225)
+Image shape: (5215, 6225, 3)
+Total number of patches: 7505.
+Patches Info: {'background': 5104, 'tumour': 1044, 'border': 1357}
+
+--- Generatin Patches for training_data_09 (42/47)---
+Mask shape: (5727, 8092)
+Image shape: (5727, 8092, 3)
+Total number of patches: 10788.
+Patches Info: {'background': 9184, 'tumour': 642, 'border': 962}
+
+--- Generatin Patches for training_data_19 (43/47)---
+Mask shape: (5785, 7221)
+Image shape: (5785, 7221, 3)
+Total number of patches: 9680.
+Patches Info: {'background': 7929, 'tumour': 559, 'border': 1192}
+
+--- Generatin Patches for training_data_05 (44/47)---
+Mask shape: (5814, 6723)
+Image shape: (5814, 6723, 3)
+Total number of patches: 9064.
+Patches Info: {'background': 7095, 'tumour': 371, 'border': 1598}
+
+--- Generatin Patches for training_data_25 (45/47)---
+Mask shape: (5483, 7843)
+Image shape: (5483, 7843, 3)
+Total number of patches: 9960.
+Patches Info: {'background': 6859, 'tumour': 1211, 'border': 1890}
+
+--- Generatin Patches for training_data_16 (46/47)---
+Mask shape: (3666, 5976)
+Image shape: (3666, 5976, 3)
+Total number of patches: 5005.
+Patches Info: {'background': 1109, 'tumour': 2652, 'border': 1244}
+
+--- Generatin Patches for training_data_01 (47/47)---
+Mask shape: (5655, 7719)
+Image shape: (5655, 7719, 3)
+Total number of patches: 10148.
+Patches Info: {'background': 7522, 'tumour': 683, 'border': 1943}
+
+--------------------------------------------------
+All Patches Info: {'background': 338317, 'tumour': 45904, 'border': 52499}
+
+Generating patches csv info...
+Done!
+
+Calculating mean and std...
+Mean rgb: [0.8807554123271034, 0.8396116564828211, 0.8812618820669211]
+std rgb: [0.06423696785242902, 0.0768305128408967, 0.06220266645576231]

@@ -202,7 +202,7 @@ class ResUnetv4(nn.Module):
             assert False, "Unknown model: {}".format(model_version)
 
         if pretrained:
-            print("--- Frosted pretrained backbone! ---")
+            print("\n--- Frosted pretrained backbone! ---")
             for param in self.resnet.parameters():  # Frost model
                 param.requires_grad = False
 
@@ -271,7 +271,7 @@ class ResUnet3Dv4(nn.Module):
             assert False, "Unknown model: {}".format(model_version)
 
         if pretrained:
-            print("--- Frosted pretrained backbone! ---")
+            print("\n--- Frosted pretrained backbone! ---")
             for param in self.resnet.parameters():  # Frost model
                 param.requires_grad = False
 
@@ -366,7 +366,7 @@ def resnet_model_selector(model_name, num_classes=1):
             if "3D" in model_name: return ResUnet3Dv4(model_name, pretrained=True, num_classes=num_classes).cuda()
             return ResUnetv4(model_name, pretrained=True, num_classes=num_classes).cuda()
         else:
-            assert False, "Uknown model name, indicate pretrained mode: {}".format(model_name)
+            assert False, "Unknown model name, indicate pretrained mode: {}".format(model_name)
 
     else:
-        assert False, "Uknown model selected!"
+        assert False, "Unknown model selected!"
