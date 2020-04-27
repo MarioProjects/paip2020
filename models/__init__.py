@@ -2,7 +2,7 @@ from .pspnet import *
 from .resnet import *
 
 
-def model_selector(model_name, num_classes, in_size=(), aux=False):
+def model_selector(model_name, num_classes=1, in_size=(), aux=False):
     """
 
     :param model_name:
@@ -17,4 +17,4 @@ def model_selector(model_name, num_classes, in_size=(), aux=False):
     if "resnet34" in model_name:
         return resnet_model_selector(model_name, num_classes)
     else:
-        assert False, "Uknown model selected: {}".format(model_name)
+        assert False, "Unknown model selected: {}".format(model_name)
