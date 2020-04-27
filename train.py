@@ -2,7 +2,6 @@
 # coding: utf-8
 
 # ---- Library import ----
-
 from torchcontrib.optim import SWA
 
 # ---- My utils ----
@@ -59,7 +58,8 @@ for current_epoch in range(args.epochs):
 
     iou, dice, val_loss = val_step(
         val_dataset, model, criterion, weights_criterion,
-        args.binary_threshold, args.batch_size
+        args.binary_threshold, args.batch_size,
+        save_preds=((current_epoch + 1) == args.epochs), save_path=args.output_dir
     )
 
     print("[" + current_time() + "] Epoch: %d, LR: %.8f, Train: %.6f, Val: %.6f, Val IOU: %s, Val Dice: %s" % (
@@ -98,7 +98,8 @@ if args.apply_swa:
 
     iou, dice, val_loss = val_step(
         val_dataset, model, criterion, weights_criterion,
-        args.binary_threshold, args.batch_size
+        args.binary_threshold, args.batch_size,
+        save_preds=True, save_path=os.path.join(args.output_dir, "swa_preds")
     )
 
     print("[SWA] Val IOU: %s, Val Dice: %s" % (iou, dice))

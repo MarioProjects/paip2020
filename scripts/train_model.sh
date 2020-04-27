@@ -12,20 +12,20 @@ slide_level=2
 patch_len=256
 stride_len=64
 
-epochs=29
+epochs=30
 defrost_epoch=7
 batch_size=24
 samples_per_type=20000
 
-optimizer="over9000"     # adam - over9000
-scheduler="one_cycle_lr" # one_cycle_lr
+optimizer="adam"     # adam - over9000
+scheduler="constant" # one_cycle_lr
 min_lr=0.0001
 max_lr=0.01
-# lr=0.001 # learning_rate for conventional schedulers
+lr=0.01 # learning_rate for conventional schedulers
 
 # bce_dice - bce_dice_ac - bce_dice_border
 criterion="bce_dice"
-weights_criterion="0.35,0.45,0.2"
+weights_criterion="0.1,0.85,0.05"
 
 img_size=256
 crop_size=256
@@ -44,7 +44,7 @@ python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $epochs --defro
   --img_size $img_size --crop_size $crop_size --scheduler $scheduler --optimizer $optimizer \
   --slide_level $slide_level --patch_len $patch_len --stride_len $stride_len \
   --samples_per_type $samples_per_type --criterion $criterion --weights_criterion $weights_criterion \
-  --min_lr $min_lr --max_lr $max_lr --seed $seed
+  --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99
 
 echo -e "\n---- Apply Stochastic Weight Averaging (SWA) ----\n"
 

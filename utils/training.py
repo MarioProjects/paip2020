@@ -1,7 +1,9 @@
+import os
 from time import gmtime, strftime
 
 import openslide
 import pandas as pd
+import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 from utils.dataload import mask_loader, PatchArrayDataset
@@ -220,15 +222,18 @@ def train_step(train_loader, model, criterion, weights_criterion, optimizer):
     return np.mean(train_loss)
 
 
-def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold, batch_size):
+def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold, batch_size,
+             save_preds=False, save_path=""):
     """
     Perform a validation step
     :param val_dataset: (Dataset) Validation dataset loader
     :param model: Model used in training
     :param criterion: Choosed criterion
-    :param weights_criterion: Choosed criterion weights
-    :param binary_threshold: Threshold to set class as class 1. Tipically 0.5
-    :param batch_size: Batch size for sliding window prediction
+    :param weights_criterion: (list -> float) Choosed criterion weights
+    :param binary_threshold: (float) Threshold to set class as class 1. Tipically 0.5
+    :param batch_size: (int) Batch size for sliding window prediction
+    :param save_preds: (bool) If true save mask predictions
+    :param save_path: (string) If save_preds then which directory to save mask predictions
     :return: Intersection Over Union and Dice Metrics, Mean validation loss
     """
     ious, dices, val_loss = [], [], []
@@ -278,6 +283,22 @@ def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold,
                 calculate_loss(torch.from_numpy(mask.astype(np.float32)), torch.from_numpy(prob_pred),
                                criterion, weights_criterion)
             )
+
+            if save_preds:
+                os.makedirs(save_path, exist_ok=True)
+                fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 16))
+                ax1.axis('off')
+                ax2.axis('off')
+                ax3.axis('off')
+                ax1.imshow(slide_img)
+                ax2.imshow(mask, cmap="gray")
+                ax3.imshow(y_pred, cmap="gray")
+                pred_filename = os.path.join(
+                    save_path,
+                    "mask_pred_{}.png".format(cur_slide_path.split("/")[-1][:-4]),
+                )
+                plt.savefig(pred_filename, bbox_inches='tight', pad_inches=0.25, dpi=250)
+                plt.close()
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()
