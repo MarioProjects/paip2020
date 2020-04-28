@@ -88,8 +88,11 @@ class PatchDataset(Dataset):
             # Random sample same number of images of 'background', 'border' and 'tumour'
             if patch_type != "all":
                 assert False, "Not possible samples_per_type and patch type != all"
-            df['frequency'] = df['type'].map(1 - df['type'].value_counts() / len(df))
-            df = df.sample(samples_per_type * 3, weights=df['frequency'], random_state=seed)  # *3 due have 3 mask types
+
+            backgrounds = df.type[df.type.eq("background")].sample(samples_per_type, random_state=seed).index
+            tumours = df.type[df.type.eq("tumour")].sample(samples_per_type, random_state=seed).index
+            border = df.type[df.type.eq("border")].sample(samples_per_type, random_state=seed).index
+            df = df.loc[backgrounds.union(border).union(tumours)]
 
         if patch_type != "all":
             if patch_type not in ["background", "border", "tumour"]:
