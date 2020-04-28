@@ -84,7 +84,7 @@ class PatchDataset(Dataset):
         else:
             assert False, "Unknown mode '{}'".format(mode)
 
-        if samples_per_type > 0:
+        if samples_per_type > 0 and mode != "validation":
             # Random sample same number of images of 'background', 'border' and 'tumour'
             if patch_type != "all":
                 assert False, "Not possible samples_per_type and patch type != all"
