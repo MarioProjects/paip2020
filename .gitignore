@@ -136,3 +136,4 @@ dmypy.json
 
 # Image and Mask Overlay (Generated with notebooks/data_exploration.ipynb)
 preprocess/overlays/
+overlays/

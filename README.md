@@ -36,6 +36,11 @@ optional arguments:
                         Which level dimension
 ```
 
+#### Get overlays
+
+We can get precomputed train overlays between images and mask with `./scripts/get_overlays.sh`. Will create a folder 
+with all train cases overlays. 
+
 
 ## Data Description
 
