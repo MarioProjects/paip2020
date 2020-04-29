@@ -3,15 +3,14 @@
 
 import argparse
 import os
-import cv2
 import warnings
 
+import cv2
 import openslide
 import pandas as pd
 import skimage.io as io
 
 import preprocess.view_utils as view_utils
-from preprocess.patches_mean_std import get_mean_and_std
 from utils.patches import *
 
 warnings.filterwarnings('ignore')
@@ -85,5 +84,30 @@ for case in range(len(train_csv)):
     # Save resized result
     io.imsave(os.path.join(base_resize_dir, raw_name + ".jpg"), resized_img)
     io.imsave(os.path.join(base_resize_dir, raw_name + ".png"), resized_mask)
+
+train_info = []
+indx = 0
+
+for subdir, dirs, files in list(os.walk(base_resize_dir)):
+    for file in files:
+        if file.endswith(".jpg"):  # Mask have same path but .png extension
+            relative_path_img = os.path.join(
+                "/".join(subdir.split("/")[-2:]),
+                file
+            )
+            case = relative_path_img.split("/")[-1][:-4]
+
+            train_info.append({
+                "case": case,
+                "image": relative_path_img,
+                "mask": relative_path_img[:-3] + "png",
+                "MSI-H": train_csv.loc[train_csv["case"] == case]["MSI-H"].item(),
+                "is_validation": train_csv.loc[train_csv["case"] == case]["is_validation"].item()
+            })
+
+train_info = pd.DataFrame(train_info)
+train_info.is_validation = train_info.is_validation.astype("int8")
+
+train_info.to_csv("utils/data/resized_level{}_size{}.csv".format(args.slide_level, args.img_size), index=False)
 
 print("Done!")

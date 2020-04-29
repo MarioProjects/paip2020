@@ -175,3 +175,63 @@ class PatchArrayDataset(Dataset):
         if mask is None:
             return patch
         return [patch, mask]
+
+
+class LowResolutionDataset(Dataset):
+    """
+    Dataset for generated lower resolution images/masks.
+    """
+
+    def __init__(self, mode, slide_level, img_size, transform, img_transform, normalize=False, seed=42):
+        """
+        Dataset for generated train patches.
+        :param mode: (string) Dataset mode in ["train", "validation"]
+        :param slide_level: (int) Which WSI level dimension
+        :param img_size: (int) Size of the low resolution image
+        :param transform: (list) List of albumentations applied to image and mask
+        :param img_transform: (list) List of albumentations applied to image only
+        :param normalize: (bool) Normalize images using global mean and std
+        :param seed: (int) For reproducibility
+        """
+
+        self.base_dir = PAIP2020_DATA_PATH
+        self.slide_level = slide_level
+        self.img_size = img_size
+        self.mode = mode
+        self.normalize = normalize
+
+        self.general_info = pd.read_csv("utils/data/train.csv")
+        df = pd.read_csv("utils/data/resized_level{}_size{}.csv".format(slide_level, img_size))
+
+        if mode == "train":
+            df = df.loc[df["is_validation"] == 0]
+        elif mode == "validation":
+            df = df.loc[df["is_validation"] == 1]
+        else:
+            assert False, "Unknown mode '{}'".format(mode)
+
+        df = df.reset_index(drop=True)
+        self.df_images = df
+
+        if normalize:
+            img_transform.append(albumentations.Normalize(mean=IMG_MEAN, std=IMG_STD, max_pixel_value=1))
+
+        self.transform = albumentations.Compose(transform)
+        self.img_transform = albumentations.Compose(img_transform)
+
+    def __len__(self):
+        return len(self.df_images)
+
+    def __getitem__(self, idx):
+        image_path = os.path.join(self.base_dir, self.df_images.loc[idx]["image"])
+        mask_path = os.path.join(self.base_dir, self.df_images.loc[idx]["mask"])
+
+        image = (io.imread(image_path) / 255.0).astype(np.float32)
+        mask = io.imread(mask_path).astype(np.float32)
+
+        image, mask = apply_augmentations(image, self.transform, self.img_transform, mask)
+
+        image = torch.from_numpy(image.transpose(2, 0, 1))  # Transpose == Channels first
+        mask = torch.from_numpy(np.expand_dims(mask, 0)).float()
+
+        return [image, mask]
