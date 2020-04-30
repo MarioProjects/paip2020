@@ -222,8 +222,42 @@ def train_step(train_loader, model, criterion, weights_criterion, optimizer):
     return np.mean(train_loss)
 
 
-def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold, batch_size,
-             save_preds=False, save_path=""):
+def val_step(val_loader, model, criterion, weights_criterion, save_pred, save_path, args):
+    """
+    Perform val step depending training mode
+    :param val_loader: (Dataloader) Validation dataset loader
+    :param model: Model used in training
+    :param criterion: Choosed criterion
+    :param weights_criterion: (list -> float) Choosed criterion weights
+    :param save_pred: (bool) If true save mask predictions
+    :param save_path: (string) If save_preds then which directory to save mask predictions
+    :param args: (dictionary) Training Arguments
+    :return: (void)
+    """
+
+    if args.training_mode == "patches":
+
+        iou, dice, val_loss = val_step_patches(
+            val_loader.dataset, model, criterion, weights_criterion,
+            args.binary_threshold, args.batch_size,
+            save_preds=save_pred, save_path=save_path
+        )
+
+    elif args.training_mode == "low_resolution":
+
+        iou, dice, val_loss = val_step_low_res(
+            val_loader, model, criterion, weights_criterion, args.binary_threshold
+        )
+
+    else:
+
+        assert False, "Unknown training mode: '{}'".format(args.training_mode)
+
+    return iou, dice, val_loss
+
+
+def val_step_patches(val_dataset, model, criterion, weights_criterion, binary_threshold, batch_size,
+                     save_preds=False, save_path=""):
     """
     Perform a validation step
     :param val_dataset: (Dataset) Validation dataset loader
@@ -295,10 +329,47 @@ def val_step(val_dataset, model, criterion, weights_criterion, binary_threshold,
                 ax3.imshow(y_pred, cmap="gray")
                 pred_filename = os.path.join(
                     save_path,
-                    "mask_pred_{}.png".format(cur_slide_path.split("/")[-1][:-4]),
+                    "patches_mask_pred_{}.png".format(cur_slide_path.split("/")[-1][:-4]),
                 )
                 plt.savefig(pred_filename, bbox_inches='tight', pad_inches=0.25, dpi=250)
                 plt.close()
+
+    iou = np.array(ious).mean()
+    dice = np.array(dices).mean()
+
+    return iou, dice, np.mean(val_loss)
+
+
+def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_threshold):
+    """
+    Perform a validation step
+    :param val_loader: (Dataloader) Validation dataset loader
+    :param model: Model used in training
+    :param criterion: Choosed criterion
+    :param weights_criterion: (list -> float) Choosed criterion weights
+    :param binary_threshold: (float) Threshold to set class as class 1. Tipically 0.5
+    :return: Intersection Over Union and Dice Metrics, Mean validation loss
+    """
+    ious, dices, val_loss = [], [], []
+    model.eval()
+
+    for image, mask in val_loader:
+        image = image.type(torch.float).cuda()
+        prob_pred = model(image)
+
+        mask = mask.cuda()
+        prob_pred = prob_pred.cuda().float()
+
+        for indx, single_pred in enumerate(prob_pred):
+            y_pred_binary = (single_pred.data.cpu().numpy() > binary_threshold).astype(np.uint8)
+
+            ious.append(jaccard_coef(mask[indx], y_pred_binary))
+            dices.append(jaccard_coef(mask[indx], y_pred_binary))
+
+        val_loss.append(
+            calculate_loss(torch.from_numpy(mask.astype(np.float32)), torch.from_numpy(prob_pred),
+                           criterion, weights_criterion)
+        )
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()

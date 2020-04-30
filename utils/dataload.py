@@ -182,7 +182,7 @@ class LowResolutionDataset(Dataset):
     Dataset for generated lower resolution images/masks.
     """
 
-    def __init__(self, mode, slide_level, img_size, transform, img_transform, normalize=False, seed=42):
+    def __init__(self, mode, slide_level, img_size, transform, img_transform, normalize=False):
         """
         Dataset for generated train patches.
         :param mode: (string) Dataset mode in ["train", "validation"]
@@ -191,7 +191,6 @@ class LowResolutionDataset(Dataset):
         :param transform: (list) List of albumentations applied to image and mask
         :param img_transform: (list) List of albumentations applied to image only
         :param normalize: (bool) Normalize images using global mean and std
-        :param seed: (int) For reproducibility
         """
 
         self.base_dir = PAIP2020_DATA_PATH
@@ -235,3 +234,32 @@ class LowResolutionDataset(Dataset):
         mask = torch.from_numpy(np.expand_dims(mask, 0)).float()
 
         return [image, mask]
+
+
+def dataset_selector(train_aug, train_aug_img, val_aug, args):
+    if args.training_mode == "patches":
+
+        train_dataset = LowResolutionDataset(
+            "train", args.slide_level, args.low_res, train_aug, train_aug_img, normalize=args.normalize
+        )
+
+        val_dataset = LowResolutionDataset(
+            "validation", args.slide_level, args.low_res, val_aug, [], normalize=args.normalize
+        )
+
+    elif args.training_mode == "low_resolution":
+
+        train_dataset = PatchDataset(
+            "train", args.slide_level, args.patch_len, args.stride_len, train_aug, train_aug_img,
+            normalize=args.normalize, patch_type="all", samples_per_type=args.samples_per_type, seed=args.seed
+        )
+
+        val_dataset = PatchDataset(
+            "validation", args.slide_level, args.patch_len, args.stride_len, val_aug, [],
+            normalize=args.normalize, patch_type="all", seed=args.seed
+        )
+
+    else:
+        assert False, "Unknown training mode: '{}'".format(args.training_mode)
+
+    return train_dataset, val_dataset

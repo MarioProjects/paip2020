@@ -8,24 +8,14 @@ from torchcontrib.optim import SWA
 from models import *
 from utils.arguments.train_arguments import *
 from utils.data_augmentation import data_augmentation_selector
-from utils.dataload import PatchDataset
+from utils.dataload import dataset_selector
 from utils.training import *
 
 np.set_printoptions(precision=4)
 train_aug, train_aug_img, val_aug = data_augmentation_selector(args.data_augmentation, args.img_size, args.crop_size)
 
-train_dataset = PatchDataset(
-    "train", args.slide_level, args.patch_len, args.stride_len, train_aug, train_aug_img,
-    normalize=args.normalize, patch_type="all", samples_per_type=args.samples_per_type, seed=args.seed
-)
-
+train_dataset, val_dataset = dataset_selector(train_aug, train_aug_img, val_aug, args)
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, drop_last=True)
-
-val_dataset = PatchDataset(
-    "validation", args.slide_level, args.patch_len, args.stride_len, val_aug, [],
-    normalize=args.normalize, patch_type="all", seed=args.seed
-)
-
 val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, drop_last=False)
 
 model = model_selector(args.model_name, in_size=(args.crop_size, args.crop_size))
@@ -57,9 +47,8 @@ for current_epoch in range(args.epochs):
     train_loss = train_step(train_loader, model, criterion, weights_criterion, optimizer)
 
     iou, dice, val_loss = val_step(
-        val_dataset, model, criterion, weights_criterion,
-        args.binary_threshold, args.batch_size,
-        save_preds=((current_epoch + 1) == args.epochs), save_path=args.output_dir
+        val_loader, model, criterion, weights_criterion,
+        ((current_epoch + 1) == args.epochs), args.output_dir, args
     )
 
     print("[" + current_time() + "] Epoch: %d, LR: %.8f, Train: %.6f, Val: %.6f, Val IOU: %s, Val Dice: %s" % (
@@ -97,9 +86,8 @@ if args.apply_swa:
     )
 
     iou, dice, val_loss = val_step(
-        val_dataset, model, criterion, weights_criterion,
-        args.binary_threshold, args.batch_size,
-        save_preds=True, save_path=os.path.join(args.output_dir, "swa_preds")
+        val_loader, model, criterion, weights_criterion,
+        True, os.path.join(args.output_dir, "swa_preds"), args
     )
 
     print("[SWA] Val IOU: %s, Val Dice: %s" % (iou, dice))

@@ -26,9 +26,11 @@ parser.add_argument('--data_augmentation', type=str, help='Apply data augmentati
 parser.add_argument('--crop_size', type=int, default=200, help='Center crop squared size')
 parser.add_argument('--img_size', type=int, default=200, help='Final img squared size')
 
+parser.add_argument('--training_mode', type=str, choices=["patches", "low_resolution"], help='How to train the model')
 parser.add_argument('--slide_level', type=int, default=2, help='Which WSI level dimension')
 parser.add_argument('--patch_len', type=int, default=256, help='Length of the patch image')
 parser.add_argument('--stride_len', type=int, default=64, help='Length of the stride')
+parser.add_argument('--low_res', type=int, default=512, help='Which image size for low resolution training mode')
 parser.add_argument('--samples_per_type', type=int, default=-1, help='Number samples per patch type. Default all')
 parser.add_argument('--normalize', action='store_true', help='Normalize images using global mean and std')
 
@@ -51,6 +53,7 @@ parser.add_argument('--apply_swa', action='store_true', help='Apply stochastic w
 parser.add_argument('--swa_freq', type=int, default=1, help='SWA Frequency')
 parser.add_argument('--swa_start', type=int, default=60, help='SWA_LR')
 parser.add_argument('--swa_lr', type=float, default=0.0001, help='SWA_LR')
+
 
 args = parser.parse_args()
 

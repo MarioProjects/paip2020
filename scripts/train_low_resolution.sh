@@ -7,15 +7,14 @@
 model="resnet34_unet_imagenet_encoder"
 gpu="0,1"
 seed=2020
+train_mode="low_resolution"
 
 slide_level=2
-patch_len=256
-stride_len=64
+low_res=512
 
 epochs=30
 defrost_epoch=7
-batch_size=24
-samples_per_type=20000
+batch_size=2
 
 optimizer="adam"     # adam - over9000
 scheduler="constant" # one_cycle_lr
@@ -42,8 +41,8 @@ echo -e "\n---- Start Initial Training ----\n"
 python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $epochs --defrost_epoch $defrost_epoch \
   --batch_size $batch_size --model_name $model --data_augmentation $data_augmentation \
   --img_size $img_size --crop_size $crop_size --scheduler $scheduler --optimizer $optimizer \
-  --slide_level $slide_level --patch_len $patch_len --stride_len $stride_len \
-  --samples_per_type $samples_per_type --criterion $criterion --weights_criterion $weights_criterion \
+  --slide_level $slide_level --low_res $low_res --training_mode $train_mode \
+  --criterion $criterion --weights_criterion $weights_criterion \
   --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99
 
 echo -e "\n---- Apply Stochastic Weight Averaging (SWA) ----\n"
@@ -52,14 +51,14 @@ swa_start=0
 swa_freq=1
 swa_lr=0.001
 swa_epochs=50
-initial_checkpoint=$model_path'model_'$model'_best_iou.pt'
+initial_checkpoint="${model_path}model_${model}_best_iou.pt"
 optimizer="sgd"
 scheduler="constant"
 python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $swa_epochs --defrost_epoch $defrost_epoch \
   --batch_size $batch_size --model_name $model --data_augmentation $data_augmentation \
   --img_size $img_size --crop_size $crop_size --scheduler $scheduler --optimizer $optimizer \
-  --slide_level $slide_level --patch_len $patch_len --stride_len $stride_len \
-  --samples_per_type $samples_per_type --criterion $criterion --weights_criterion $weights_criterion \
+  --slide_level $slide_level --low_res $low_res --training_mode $train_mode \
+  --criterion $criterion --weights_criterion $weights_criterion \
   --apply_swa --swa_start $swa_start --swa_freq $swa_freq --swa_lr $swa_lr \
   --model_checkpoint $initial_checkpoint --seed $seed
 
