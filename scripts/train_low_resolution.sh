@@ -13,14 +13,14 @@ slide_level=2
 low_res=512
 
 epochs=30
-defrost_epoch=7
+defrost_epoch=4
 batch_size=2
 
 optimizer="adam"     # adam - over9000
 scheduler="constant" # one_cycle_lr
 min_lr=0.0001
 max_lr=0.01
-lr=0.01 # learning_rate for conventional schedulers
+lr=0.0001 # learning_rate for conventional schedulers
 
 # bce_dice - bce_dice_ac - bce_dice_border
 criterion="bce_dice"
@@ -33,7 +33,7 @@ crop_size=256
 # "shift" - "scale" - "optical_distortion" - "coarse_dropout"
 data_augmentation="none"
 
-parent_dir="lvl${slide_level}_patch${patch_len}_stride$stride_len/samples_$samples_per_type/$model/$optimizer/$criterion"
+parent_dir="lvl${slide_level}_lowres${low_res}/$model/$optimizer/$criterion"
 model_path="results/$parent_dir/weights${weights_criterion}_da${data_augmentation}_minlr${min_lr}_maxlr${max_lr}"
 
 echo -e "\n---- Start Initial Training ----\n"
@@ -43,7 +43,7 @@ python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $epochs --defro
   --img_size $img_size --crop_size $crop_size --scheduler $scheduler --optimizer $optimizer \
   --slide_level $slide_level --low_res $low_res --training_mode $train_mode \
   --criterion $criterion --weights_criterion $weights_criterion \
-  --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99
+  --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99 --learning_rate $lr
 
 echo -e "\n---- Apply Stochastic Weight Averaging (SWA) ----\n"
 

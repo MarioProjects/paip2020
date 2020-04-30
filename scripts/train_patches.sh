@@ -14,7 +14,7 @@ patch_len=256
 stride_len=64
 
 epochs=30
-defrost_epoch=7
+defrost_epoch=4
 batch_size=24
 samples_per_type=20000
 
@@ -45,7 +45,7 @@ python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $epochs --defro
   --img_size $img_size --crop_size $crop_size --scheduler $scheduler --optimizer $optimizer \
   --slide_level $slide_level --patch_len $patch_len --stride_len $stride_len --training_mode $train_mode \
   --samples_per_type $samples_per_type --criterion $criterion --weights_criterion $weights_criterion \
-  --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99
+  --min_lr $min_lr --max_lr $max_lr --seed $seed --scheduler_steps 99 --learning_rate $lr
 
 echo -e "\n---- Apply Stochastic Weight Averaging (SWA) ----\n"
 

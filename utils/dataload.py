@@ -239,16 +239,6 @@ class LowResolutionDataset(Dataset):
 def dataset_selector(train_aug, train_aug_img, val_aug, args):
     if args.training_mode == "patches":
 
-        train_dataset = LowResolutionDataset(
-            "train", args.slide_level, args.low_res, train_aug, train_aug_img, normalize=args.normalize
-        )
-
-        val_dataset = LowResolutionDataset(
-            "validation", args.slide_level, args.low_res, val_aug, [], normalize=args.normalize
-        )
-
-    elif args.training_mode == "low_resolution":
-
         train_dataset = PatchDataset(
             "train", args.slide_level, args.patch_len, args.stride_len, train_aug, train_aug_img,
             normalize=args.normalize, patch_type="all", samples_per_type=args.samples_per_type, seed=args.seed
@@ -257,6 +247,16 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args):
         val_dataset = PatchDataset(
             "validation", args.slide_level, args.patch_len, args.stride_len, val_aug, [],
             normalize=args.normalize, patch_type="all", seed=args.seed
+        )
+
+    elif args.training_mode == "low_resolution":
+
+        train_dataset = LowResolutionDataset(
+            "train", args.slide_level, args.low_res, train_aug, train_aug_img, normalize=args.normalize
+        )
+
+        val_dataset = LowResolutionDataset(
+            "validation", args.slide_level, args.low_res, val_aug, [], normalize=args.normalize
         )
 
     else:

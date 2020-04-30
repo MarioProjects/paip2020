@@ -362,14 +362,10 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
 
         for indx, single_pred in enumerate(prob_pred):
             y_pred_binary = (single_pred.data.cpu().numpy() > binary_threshold).astype(np.uint8)
+            ious.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
+            dices.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
 
-            ious.append(jaccard_coef(mask[indx], y_pred_binary))
-            dices.append(jaccard_coef(mask[indx], y_pred_binary))
-
-        val_loss.append(
-            calculate_loss(torch.from_numpy(mask.astype(np.float32)), torch.from_numpy(prob_pred),
-                           criterion, weights_criterion)
-        )
+        val_loss.append(calculate_loss(mask, prob_pred, criterion, weights_criterion).item())
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()
