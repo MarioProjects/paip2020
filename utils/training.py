@@ -353,19 +353,20 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
     ious, dices, val_loss = [], [], []
     model.eval()
 
-    for image, mask in val_loader:
-        image = image.type(torch.float).cuda()
-        prob_pred = model(image)
+    with torch.no_grad():
+        for image, mask in val_loader:
+            image = image.type(torch.float).cuda()
+            prob_pred = model(image)
 
-        mask = mask.cuda()
-        prob_pred = prob_pred.cuda().float()
+            mask = mask.cuda()
+            prob_pred = prob_pred.cuda().float()
 
-        for indx, single_pred in enumerate(prob_pred):
-            y_pred_binary = (single_pred.data.cpu().numpy() > binary_threshold).astype(np.uint8)
-            ious.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
-            dices.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
+            for indx, single_pred in enumerate(prob_pred):
+                y_pred_binary = (single_pred.data.cpu().numpy() > binary_threshold).astype(np.uint8)
+                ious.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
+                dices.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
 
-        val_loss.append(calculate_loss(mask, prob_pred, criterion, weights_criterion).item())
+            val_loss.append(calculate_loss(mask, prob_pred, criterion, weights_criterion).item())
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()

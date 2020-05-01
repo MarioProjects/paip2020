@@ -1,3 +1,4 @@
+from .custom_pspnet import *
 from .pspnet import *
 from .resnet import *
 
@@ -11,6 +12,8 @@ def model_selector(model_name, num_classes=1, in_size=(), aux=False):
     :param aux:
     :return:
     """
+    if "custom_pspnet" in model_name:
+        return custom_psp_model_selector(model_name, num_classes)
     if "pspnet" in model_name:
         return psp_model_selector(model_name, num_classes, in_size, aux)
     if "resnet34" in model_name:
