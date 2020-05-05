@@ -1,9 +1,10 @@
 import os
 from time import gmtime, strftime
 
+import cv2
+import matplotlib.pyplot as plt
 import openslide
 import pandas as pd
-import matplotlib.pyplot as plt
 from torch.utils.data import DataLoader
 
 from utils.dataload import mask_loader, PatchArrayDataset
@@ -32,6 +33,31 @@ def dict2df(my_dict, path):
     df = pd.DataFrame.from_dict(my_dict, orient="columns")
     df.index.names = ['epoch']
     df.to_csv(path, index=True)
+
+
+def reescale_img(img, dim):
+    """
+    Reescale image / Util for img to low resolution and original resolution via padding with 0s
+    :param img: (np.array) Image to reescale with padding/unpadding (height, width, channels)
+    :param dim: (tuple) Desired final img dimension (height, width)
+    :return: Reescaled img to desired dim using padding and unpadding with 0s
+    """
+    if dim[0] < img.shape[0] or dim[1] < img.shape[1]:  # Downsample -> Padding + Resize /// IMGS
+        # First create a squared zeros egion where will we put the image
+        max_size = max(img.shape[:2])
+        padded_array = np.zeros((max_size, max_size, 3)).astype(img.dtype)
+        # Place the image at coresponding place/coordinates
+        shape = np.shape(img)
+        padded_array[:shape[0], :shape[1], :shape[2]] = img
+        # Finally reescale the image without loosing initial image aspect ratio
+        return cv2.resize(padded_array, dim)
+    else:  # Upsample -> Unpadding + Resize /// MASKS
+        # Resize image to original max shape (respect aspect ratio)
+        max_size = max(dim)
+        upsampled = cv2.resize(img, (max_size, max_size), interpolation=cv2.INTER_AREA)
+        # Place upsampled image and return
+        unpadded_array = upsampled[:dim[0], :dim[1]]
+        return unpadded_array
 
 
 def get_current_lr(optimizer):
@@ -351,10 +377,11 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
     :return: Intersection Over Union and Dice Metrics, Mean validation loss
     """
     ious, dices, val_loss = [], [], []
+    original_ious, original_dices = [], []  # Comparing whit original masks (resize prediction)
     model.eval()
 
     with torch.no_grad():
-        for image, mask in val_loader:
+        for image, mask, original_mask in val_loader:
             image = image.type(torch.float).cuda()
             prob_pred = model(image)
 
@@ -362,13 +389,24 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
             prob_pred = prob_pred.cuda().float()
 
             for indx, single_pred in enumerate(prob_pred):
-                y_pred_binary = (single_pred.data.cpu().numpy() > binary_threshold).astype(np.uint8)
+                # Metrics os resized space
+                y_pred_binary = (single_pred.data.cpu().numpy().squeeze() > binary_threshold).astype(np.uint8)
                 ious.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
                 dices.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
+
+                # Calculate metrics resizing prediction to original mask shape
+                current_original_mask = original_mask[indx].data.cpu().numpy().astype(np.uint8)
+                y_pred_binary_resized = reescale_img(y_pred_binary, current_original_mask.shape[:2])
+
+                original_ious.append(jaccard_coef(current_original_mask, y_pred_binary_resized))
+                original_dices.append(jaccard_coef(current_original_mask, y_pred_binary_resized))
 
             val_loss.append(calculate_loss(mask, prob_pred, criterion, weights_criterion).item())
 
     iou = np.array(ious).mean()
     dice = np.array(dices).mean()
 
-    return iou, dice, np.mean(val_loss)
+    original_iou = np.array(original_ious).mean()
+    original_dice = np.array(original_dices).mean()
+
+    return [iou, original_iou], [dice, original_dice], np.mean(val_loss)

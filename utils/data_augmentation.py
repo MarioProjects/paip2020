@@ -7,6 +7,9 @@ def data_augmentation_selector(da_policy, img_size, crop_size):
     if da_policy == "none" or da_policy is None:
         return da_policy_none(img_size, crop_size)
 
+    elif da_policy == "random_crops":
+        return da_policy_randomcrop(img_size, crop_size)
+
     elif da_policy == "rotations":
         return da_policy_rotate(img_size, crop_size)
 
@@ -33,6 +36,9 @@ def data_augmentation_selector(da_policy, img_size, crop_size):
 
     elif da_policy == "coarse_dropout":
         return da_policy_coarsedropout(img_size, crop_size)
+
+    elif da_policy == "downscale":
+        return da_policy_downscale(img_size, crop_size)
 
     elif da_policy == "combination":
         return da_policy_combination(img_size, crop_size)
@@ -64,6 +70,21 @@ def da_policy_none(img_size, crop_size):
         albumentations.Resize(img_size, img_size),
         albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
     ]
+
+    return train_aug, train_aug_img, val_aug
+
+
+def da_policy_randomcrop(img_size, crop_size):  # DA_Rotate
+    print("Using Data Augmentation Random Crops")
+    train_aug = [
+        albumentations.Resize(img_size, img_size),
+        albumentations.RandomCrop(p=1, height=crop_size, width=crop_size),
+        albumentations.Rotate(p=0.55, limit=45, interpolation=1, border_mode=0),
+    ]
+
+    train_aug_img = []
+
+    val_aug = common_test_augmentation(img_size, crop_size)
 
     return train_aug, train_aug_img, val_aug
 
@@ -118,7 +139,7 @@ def da_policy_elastictransform(img_size, crop_size):
     train_aug = [
         albumentations.Resize(img_size, img_size),
         albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
-        albumentations.ElasticTransform(p=0.7, alpha=177, sigma=177 * 0.05, alpha_affine=176 * 0.03),
+        albumentations.ElasticTransform(p=0.7, alpha=333, sigma=333 * 0.05, alpha_affine=333 * 0.1),
     ]
 
     train_aug_img = []
@@ -133,7 +154,7 @@ def da_policy_griddistortion(img_size, crop_size):
     train_aug = [
         albumentations.Resize(img_size, img_size),
         albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
-        albumentations.GridDistortion(p=0.55, distort_limit=0.3),
+        albumentations.GridDistortion(p=0.55, distort_limit=0.5),
     ]
 
     train_aug_img = []
@@ -178,7 +199,7 @@ def da_policy_opticaldistortion(img_size, crop_size):
     train_aug = [
         albumentations.Resize(img_size, img_size),
         albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
-        albumentations.OpticalDistortion(p=0.6, distort_limit=0.2, shift_limit=0.2)
+        albumentations.OpticalDistortion(p=0.6, distort_limit=0.7, shift_limit=0.2)
     ]
 
     train_aug_img = []
@@ -193,10 +214,24 @@ def da_policy_coarsedropout(img_size, crop_size):
     train_aug = [
         albumentations.Resize(img_size, img_size),
         albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
-        albumentations.CoarseDropout(p=0.6, max_holes=3, max_height=50, max_width=50)
+        albumentations.CoarseDropout(p=0.6, max_holes=3, max_height=25, max_width=25)
     ]
 
     train_aug_img = []
+
+    val_aug = common_test_augmentation(img_size, crop_size)
+
+    return train_aug, train_aug_img, val_aug
+
+
+def da_policy_downscale(img_size, crop_size):
+    print("Using Data Augmentation Downscale")
+    train_aug = [
+        albumentations.Resize(img_size, img_size),
+        albumentations.CenterCrop(p=1, height=crop_size, width=crop_size),
+    ]
+
+    train_aug_img = [albumentations.Downscale(p=0.7, scale_min=0.4, scale_max=0.8, interpolation=0)]
 
     val_aug = common_test_augmentation(img_size, crop_size)
 

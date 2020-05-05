@@ -15,8 +15,8 @@ np.set_printoptions(precision=4)
 train_aug, train_aug_img, val_aug = data_augmentation_selector(args.data_augmentation, args.img_size, args.crop_size)
 
 train_dataset, val_dataset = dataset_selector(train_aug, train_aug_img, val_aug, args)
-train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, num_workers=4, drop_last=True)
-val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, num_workers=4, drop_last=False)
+train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
+val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, drop_last=False)
 
 model = model_selector(args.model_name, in_size=(args.crop_size, args.crop_size))
 model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))
@@ -51,8 +51,15 @@ for current_epoch in range(args.epochs):
         ((current_epoch + 1) == args.epochs), args.output_dir, args
     )
 
+    if isinstance(iou, list):  # We have multiple metric sources (resized image and interpolated...)
+        iou_str, dice_str = ['%.4f' % elem for elem in iou], ['%.4f' % elem for elem in dice]
+        iou = np.mean(iou)
+        dice = np.mean(dice)
+    else:
+        iou_str, dice_str = '%.4f' % iou, '%.4f' % dice
+
     print("[" + current_time() + "] Epoch: %d, LR: %.8f, Train: %.6f, Val: %.6f, Val IOU: %s, Val Dice: %s" % (
-        current_epoch + 1, get_current_lr(optimizer), train_loss, val_loss, iou, dice))
+        current_epoch + 1, get_current_lr(optimizer), train_loss, val_loss, iou_str, dice_str))
 
     if iou > best_iou and not args.apply_swa:
         torch.save(model.state_dict(), args.output_dir + "/model_" + args.model_name + "_best_iou.pt")

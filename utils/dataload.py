@@ -1,10 +1,10 @@
-import os
-
 import albumentations
 import numpy as np
+import os
 import pandas as pd
 import torch
 from skimage import io
+from sklearn.model_selection import StratifiedKFold, GroupKFold
 from torch.utils.data import Dataset
 
 IMG_MEAN = (0.8807554123271034, 0.8396116564828211, 0.8812618820669211)
@@ -51,7 +51,7 @@ class PatchDataset(Dataset):
     """
 
     def __init__(self, mode, slide_level, patch_len, stride_len, transform, img_transform,
-                 samples_per_type=-1, normalize=False, patch_type="all", seed=42):
+                 samples_per_type=-1, normalize=False, patch_type="all", fold=0, seed=42):
         """
         Dataset for generated train patches.
         :param mode: (string) Dataset mode in ["train", "validation"]
@@ -77,12 +77,18 @@ class PatchDataset(Dataset):
         self.general_info = pd.read_csv("utils/data/train.csv")
         df = pd.read_csv("utils/data/patches_level{}_len{}_stride{}.csv".format(slide_level, patch_len, stride_len))
 
-        if mode == "train":
-            df = df.loc[df["is_validation"] == 0]
-        elif mode == "validation":
-            df = df.loc[df["is_validation"] == 1]
-        else:
-            assert False, "Unknown mode '{}'".format(mode)
+        skf = GroupKFold(n_splits=5)
+        target = df["MSI-H"]
+        for fold_indx, (train_index, val_index) in enumerate(
+                skf.split(np.zeros(len(target)), target, groups=df["case"])):
+            if fold_indx == fold:  # If current iteration is the desired fold, take it!
+                if mode == "train":
+                    df = df.loc[train_index]
+                elif mode == "validation":
+                    df = df.loc[val_index]
+                else:
+                    assert False, "Unknown mode '{}'".format(mode)
+                break
 
         if samples_per_type > 0 and mode != "validation":
             # Random sample same number of images of 'background', 'border' and 'tumour'
@@ -182,7 +188,7 @@ class LowResolutionDataset(Dataset):
     Dataset for generated lower resolution images/masks.
     """
 
-    def __init__(self, mode, slide_level, img_size, transform, img_transform, normalize=False):
+    def __init__(self, mode, slide_level, img_size, transform, img_transform, fold=0, normalize=False):
         """
         Dataset for generated train patches.
         :param mode: (string) Dataset mode in ["train", "validation"]
@@ -199,15 +205,20 @@ class LowResolutionDataset(Dataset):
         self.mode = mode
         self.normalize = normalize
 
-        self.general_info = pd.read_csv("utils/data/train.csv")
-        df = pd.read_csv("utils/data/resized_level{}_size{}.csv".format(slide_level, img_size))
+        self.general_info = pd.read_csv("../utils/data/train.csv")
+        df = pd.read_csv("../utils/data/resized_level{}_size{}.csv".format(slide_level, img_size))
 
-        if mode == "train":
-            df = df.loc[df["is_validation"] == 0]
-        elif mode == "validation":
-            df = df.loc[df["is_validation"] == 1]
-        else:
-            assert False, "Unknown mode '{}'".format(mode)
+        skf = StratifiedKFold(n_splits=5)
+        target = df["MSI-H"]
+        for fold_indx, (train_index, val_index) in enumerate(skf.split(np.zeros(len(target)), target)):
+            if fold_indx == fold:  # If current iteration is the desired fold, take it!
+                if mode == "train":
+                    df = df.loc[train_index]
+                elif mode == "validation":
+                    df = df.loc[val_index]
+                else:
+                    assert False, "Unknown mode '{}'".format(mode)
+                break
 
         df = df.reset_index(drop=True)
         self.df_images = df
@@ -233,6 +244,13 @@ class LowResolutionDataset(Dataset):
         image = torch.from_numpy(image.transpose(2, 0, 1))  # Transpose == Channels first
         mask = torch.from_numpy(np.expand_dims(mask, 0)).float()
 
+        if self.mode == "validation":
+            original_mask_path = os.path.join(
+                self.base_dir, "Train", "mask_img_l{}".format(self.slide_level),
+                "{}_l{}_annotation_tumor.tif".format(self.df_images.loc[idx]["case"], self.slide_level)
+            )
+            original_mask = io.imread(original_mask_path).astype(np.float32)
+            return [image, mask, original_mask]
         return [image, mask]
 
 
@@ -241,22 +259,26 @@ def dataset_selector(train_aug, train_aug_img, val_aug, args):
 
         train_dataset = PatchDataset(
             "train", args.slide_level, args.patch_len, args.stride_len, train_aug, train_aug_img,
-            normalize=args.normalize, patch_type="all", samples_per_type=args.samples_per_type, seed=args.seed
+            normalize=args.normalize, patch_type="all", samples_per_type=args.samples_per_type, seed=args.seed,
+            fold=args.data_fold
         )
 
         val_dataset = PatchDataset(
             "validation", args.slide_level, args.patch_len, args.stride_len, val_aug, [],
-            normalize=args.normalize, patch_type="all", seed=args.seed
+            normalize=args.normalize, patch_type="all", seed=args.seed,
+            fold=args.data_fold
         )
 
     elif args.training_mode == "low_resolution":
 
         train_dataset = LowResolutionDataset(
-            "train", args.slide_level, args.low_res, train_aug, train_aug_img, normalize=args.normalize
+            "train", args.slide_level, args.low_res, train_aug, train_aug_img, normalize=args.normalize,
+            fold=args.data_fold
         )
 
         val_dataset = LowResolutionDataset(
-            "validation", args.slide_level, args.low_res, val_aug, [], normalize=args.normalize
+            "validation", args.slide_level, args.low_res, val_aug, [], normalize=args.normalize,
+            fold=args.data_fold
         )
 
     else:

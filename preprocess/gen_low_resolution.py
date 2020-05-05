@@ -101,13 +101,10 @@ for subdir, dirs, files in list(os.walk(base_resize_dir)):
                 "case": case,
                 "image": relative_path_img,
                 "mask": relative_path_img[:-3] + "png",
-                "MSI-H": train_csv.loc[train_csv["case"] == case]["MSI-H"].item(),
-                "is_validation": train_csv.loc[train_csv["case"] == case]["is_validation"].item()
+                "MSI-H": train_csv.loc[train_csv["case"] == case]["MSI-H"].item()
             })
 
 train_info = pd.DataFrame(train_info)
-train_info.is_validation = train_info.is_validation.astype("int8")
-
 train_info.to_csv("utils/data/resized_level{}_size{}.csv".format(args.slide_level, args.img_size), index=False)
 
 print("Done!")

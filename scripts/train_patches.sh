@@ -9,6 +9,8 @@ gpu="0,1"
 seed=2020
 train_mode="patches"
 
+data_fold=0 # 0 - 1 - 2 - 3 - 4
+
 slide_level=2
 patch_len=256
 stride_len=64
@@ -16,7 +18,7 @@ stride_len=64
 epochs=30
 defrost_epoch=4
 batch_size=24
-samples_per_type=20000
+samples_per_type=200
 
 optimizer="adam"     # adam - over9000
 scheduler="constant" # one_cycle_lr
@@ -32,7 +34,7 @@ img_size=256
 crop_size=256
 
 # "none" - "rotations" - "flips" - "elastic_transform" - "grid_distortion"
-# "shift" - "scale" - "optical_distortion" - "coarse_dropout"
+# "shift" - "scale" - "optical_distortion" - "coarse_dropout" - "random_crops" - "downscale"
 data_augmentation="none"
 
 parent_dir="lvl${slide_level}_patch${patch_len}_stride$stride_len/samples_$samples_per_type/$model/$optimizer/$criterion"
@@ -62,6 +64,7 @@ python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $swa_epochs --d
   --slide_level $slide_level --patch_len $patch_len --stride_len $stride_len --training_mode $train_mode \
   --samples_per_type $samples_per_type --criterion $criterion --weights_criterion $weights_criterion \
   --apply_swa --swa_start $swa_start --swa_freq $swa_freq --swa_lr $swa_lr \
-  --model_checkpoint $initial_checkpoint --seed $seed
+  --model_checkpoint $initial_checkpoint --seed $seed \
+  --data_fold $data_fold
 
 python3 utils/slack_message.py --msg "[PAIP 2020] Experiment finished!"

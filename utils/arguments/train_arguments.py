@@ -20,6 +20,7 @@ parser.add_argument('--output_dir', type=str, help='Where progress/checkpoints w
 
 parser.add_argument('--epochs', type=int, default=150, help='Total number epochs for training')
 parser.add_argument('--batch_size', type=int, default=64, help='Batch Size for training')
+parser.add_argument('--data_fold', type=int, choices=[0, 1, 2, 3, 4], help='Which training Fold (Cross Validation)')
 
 parser.add_argument('--model_name', type=str, default='simple_unet', help='Model name for training')
 parser.add_argument('--data_augmentation', type=str, help='Apply data augmentations at train time')

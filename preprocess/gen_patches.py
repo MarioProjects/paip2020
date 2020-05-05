@@ -133,13 +133,10 @@ for subdir, dirs, files in list(os.walk(base_patch_dir)):
                 "type": file.split("_")[-1][:-4],
                 "ph": file[file.find("ph") + 2:file.find("_pw")],
                 "pw": file[file.find("pw") + 2:file.rfind("_")],
-                "MSI-H": train_csv.loc[train_csv["case"] == case]["MSI-H"].item(),
-                "is_validation": train_csv.loc[train_csv["case"] == case]["is_validation"].item()
+                "MSI-H": train_csv.loc[train_csv["case"] == case]["MSI-H"].item()
             })
 
 train_info = pd.DataFrame(train_info)
-train_info.is_validation = train_info.is_validation.astype("int8")
-
 train_info.to_csv("utils/data/patches_level{}_len{}_stride{}.csv".format(p_level, patch_len, stride_len), index=False)
 
 print("Done!\n\nCalculating mean and std...")
