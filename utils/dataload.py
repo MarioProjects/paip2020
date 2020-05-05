@@ -205,8 +205,8 @@ class LowResolutionDataset(Dataset):
         self.mode = mode
         self.normalize = normalize
 
-        self.general_info = pd.read_csv("../utils/data/train.csv")
-        df = pd.read_csv("../utils/data/resized_level{}_size{}.csv".format(slide_level, img_size))
+        self.general_info = pd.read_csv("utils/data/train.csv")
+        df = pd.read_csv("utils/data/resized_level{}_size{}.csv".format(slide_level, img_size))
 
         skf = StratifiedKFold(n_splits=5)
         target = df["MSI-H"]

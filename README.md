@@ -13,13 +13,14 @@ Also, the user needs to to pre-install a feew packages:
 $ pip install -r requirements.txt
 ```
 
-#### Data Preparation
+### Data Preparation
 
 We have to download provided SWI files with their xml mask and unzip them into `PAIP2020_DATA_PATH` creating
 for them 'Train/SWI/' and 'Train/annotation/' folders respectively. Now we generate the .tif mask files from the .xml
 running `python3 preprocess/xml2mask.py`. This will create a 'Train/mask_img_l2' folder with the generated masks.
 
-Finally we will generate the patches: `python3 preprocess/gen_patches.py`.
+#### Patches
+We can generate data patches: `python3 preprocess/gen_patches.py`.
 ```shell script
 usage: gen_patches.py [-h] [--patch_len PATCH_LEN] [--stride_len STRIDE_LEN]
                       [--slide_level SLIDE_LEVEL]
@@ -34,6 +35,21 @@ optional arguments:
                         Stride of sliding window. Default patch_len // 4
   --slide_level SLIDE_LEVEL
                         Which level dimension
+```
+
+#### Low resolution
+We can generate low resolution images: `python3 preprocess/gen_low_resolution.py`.
+```shell script
+usage: gen_low_resolution.py [-h] [--img_size IMG_SIZE]
+                             [--slide_level SLIDE_LEVEL]
+
+PAIP2020 Patch Generator
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --img_size IMG_SIZE   Final squared image size
+  --slide_level SLIDE_LEVEL
+                        From which level dimension resize
 ```
 
 #### Get overlays
