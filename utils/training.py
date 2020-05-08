@@ -405,7 +405,7 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
                 original_dices.append(dice_coef(current_original_mask, y_pred_binary_resized))
 
                 if save_preds:
-                    cur_slide_path = val_loader.dataset.general_info.loc[sample_indx]["case"]
+                    cur_slide_path = val_loader.dataset.df_images.loc[sample_indx]["case"]
                     os.makedirs(save_path, exist_ok=True)
                     fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 16))
                     ax1.axis('off')
