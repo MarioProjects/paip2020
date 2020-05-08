@@ -16,7 +16,10 @@ train_aug, train_aug_img, val_aug = data_augmentation_selector(args.data_augment
 
 train_dataset, val_dataset = dataset_selector(train_aug, train_aug_img, val_aug, args)
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, drop_last=True)
-val_loader = DataLoader(val_dataset, batch_size=args.batch_size, shuffle=False, drop_last=False)
+val_loader = DataLoader(
+    val_dataset, batch_size=1 if args.training_mode == "low_resolution" else args.batch_size,
+    shuffle=False, drop_last=False
+)
 
 model = model_selector(args.model_name, in_size=(args.crop_size, args.crop_size))
 model = torch.nn.DataParallel(model, device_ids=range(torch.cuda.device_count()))

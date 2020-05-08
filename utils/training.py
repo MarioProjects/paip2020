@@ -272,7 +272,8 @@ def val_step(val_loader, model, criterion, weights_criterion, save_pred, save_pa
     elif args.training_mode == "low_resolution":
 
         iou, dice, val_loss = val_step_low_res(
-            val_loader, model, criterion, weights_criterion, args.binary_threshold
+            val_loader, model, criterion, weights_criterion, args.binary_threshold,
+            save_preds=save_pred, save_path=save_path
         )
 
     else:
@@ -338,7 +339,7 @@ def val_step_patches(val_dataset, model, criterion, weights_criterion, binary_th
             y_pred = (prob_pred > binary_threshold).astype(np.uint8)
 
             ious.append(jaccard_coef(mask, y_pred))
-            dices.append(jaccard_coef(mask, y_pred))
+            dices.append(dice_coef(mask, y_pred))
             val_loss.append(
                 calculate_loss(torch.from_numpy(mask.astype(np.float32)), torch.from_numpy(prob_pred),
                                criterion, weights_criterion)
@@ -366,14 +367,16 @@ def val_step_patches(val_dataset, model, criterion, weights_criterion, binary_th
     return iou, dice, np.mean(val_loss)
 
 
-def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_threshold):
+def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_threshold, save_preds=False, save_path=""):
     """
     Perform a validation step
     :param val_loader: (Dataloader) Validation dataset loader
     :param model: Model used in training
     :param criterion: Choosed criterion
     :param weights_criterion: (list -> float) Choosed criterion weights
-    :param binary_threshold: (float) Threshold to set class as class 1. Tipically 0.5
+    :param binary_threshold: (float) Threshold to set class as class 1. Typically 0.5
+    :param save_preds: (bool) If true save mask predictions
+    :param save_path: (string) If save_preds then which directory to save mask predictions
     :return: Intersection Over Union and Dice Metrics, Mean validation loss
     """
     ious, dices, val_loss = [], [], []
@@ -381,7 +384,7 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
     model.eval()
 
     with torch.no_grad():
-        for image, mask, original_mask in val_loader:
+        for sample_indx, (image, mask, original_img, original_mask) in enumerate(val_loader):
             image = image.type(torch.float).cuda()
             prob_pred = model(image)
 
@@ -392,14 +395,33 @@ def val_step_low_res(val_loader, model, criterion, weights_criterion, binary_thr
                 # Metrics os resized space
                 y_pred_binary = (single_pred.data.cpu().numpy().squeeze() > binary_threshold).astype(np.uint8)
                 ious.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
-                dices.append(jaccard_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
+                dices.append(dice_coef(mask[indx].data.cpu().numpy(), y_pred_binary))
 
                 # Calculate metrics resizing prediction to original mask shape
                 current_original_mask = original_mask[indx].data.cpu().numpy().astype(np.uint8)
                 y_pred_binary_resized = reescale_img(y_pred_binary, current_original_mask.shape[:2])
 
                 original_ious.append(jaccard_coef(current_original_mask, y_pred_binary_resized))
-                original_dices.append(jaccard_coef(current_original_mask, y_pred_binary_resized))
+                original_dices.append(dice_coef(current_original_mask, y_pred_binary_resized))
+
+                if save_preds:
+                    cur_slide_path = val_loader.dataset.general_info.loc[sample_indx]["case"]
+                    os.makedirs(save_path, exist_ok=True)
+                    fig, (ax1, ax2, ax3) = plt.subplots(1, 3, figsize=(16, 16))
+                    ax1.axis('off')
+                    ax2.axis('off')
+                    ax3.axis('off')
+                    print(cur_slide_path)
+                    current_original_img = original_img[indx].data.cpu().numpy().astype(np.uint8)
+                    ax1.imshow(current_original_img)
+                    ax2.imshow(current_original_mask.squeeze(), cmap="gray")
+                    ax3.imshow(y_pred_binary_resized.squeeze(), cmap="gray")
+                    pred_filename = os.path.join(
+                        save_path,
+                        "low_res_mask_pred_{}.png".format(cur_slide_path),
+                    )
+                    plt.savefig(pred_filename, bbox_inches='tight', pad_inches=0.25, dpi=250)
+                    plt.close()
 
             val_loss.append(calculate_loss(mask, prob_pred, criterion, weights_criterion).item())
 

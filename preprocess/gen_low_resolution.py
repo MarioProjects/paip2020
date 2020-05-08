@@ -37,10 +37,16 @@ for argument in args.__dict__:
 
 train_csv = pd.read_csv("utils/data/train.csv")
 
-base_resize_dir = os.path.join(
-    PAIP2020_DATA_PATH,
-    "Train/resized_level{}_size{}".format(args.slide_level, args.img_size)
-)
+if args.img_size != 0:
+    base_resize_dir = os.path.join(
+        PAIP2020_DATA_PATH,
+        "Train/resized_level{}_size{}".format(args.slide_level, args.img_size)
+    )
+else: # We want to save WSI as jpg for some slide level
+    base_resize_dir = os.path.join(
+        PAIP2020_DATA_PATH,
+        "Train/resized_level{}".format(args.slide_level)
+    )
 
 os.makedirs(base_resize_dir, exist_ok=True)
 
@@ -63,27 +69,35 @@ for case in range(len(train_csv)):
     slide_img = np.asarray(slide_img)[:, :, :3]  # Quitamos el canal alpha ya que no tiene información relevante
     print("Image shape: {}".format(slide_img.shape))
 
-    max_size = max(slide_img.shape[:2])
-    resize_dim = (args.img_size, args.img_size)
-    original_shape = np.shape(slide_img)
+    if args.img_size != 0:
 
-    # Resize image
-    padded_img = np.zeros((max_size, max_size, 3)).astype(slide_img.dtype)
+        max_size = max(slide_img.shape[:2])
+        resize_dim = (args.img_size, args.img_size)
+        original_shape = np.shape(slide_img)
 
-    padded_img[:original_shape[0], :original_shape[1], :original_shape[2]] = slide_img
+        # Resize image
+        padded_img = np.zeros((max_size, max_size, 3)).astype(slide_img.dtype)
 
-    resized_img = cv2.resize(padded_img, resize_dim)
+        padded_img[:original_shape[0], :original_shape[1], :original_shape[2]] = slide_img
 
-    # Resize mask
-    padded_mask = np.zeros((max_size, max_size)).astype(mask_img.dtype)
+        resized_img = cv2.resize(padded_img, resize_dim)
 
-    padded_mask[:original_shape[0], :original_shape[1]] = mask_img
+        # Resize mask
+        padded_mask = np.zeros((max_size, max_size)).astype(mask_img.dtype)
 
-    resized_mask = cv2.resize(padded_mask, resize_dim)
+        padded_mask[:original_shape[0], :original_shape[1]] = mask_img
 
-    # Save resized result
-    io.imsave(os.path.join(base_resize_dir, raw_name + ".jpg"), resized_img)
-    io.imsave(os.path.join(base_resize_dir, raw_name + ".png"), resized_mask)
+        resized_mask = cv2.resize(padded_mask, resize_dim)
+
+        # Save resized result
+        io.imsave(os.path.join(base_resize_dir, raw_name + ".jpg"), resized_img)
+        io.imsave(os.path.join(base_resize_dir, raw_name + ".png"), resized_mask)
+
+    else: # We want to save WSI as jpg for some slide level
+
+        # Save resized result
+        io.imsave(os.path.join(base_resize_dir, raw_name + ".jpg"), slide_img)
+        io.imsave(os.path.join(base_resize_dir, raw_name + ".png"), mask_img)
 
 train_info = []
 indx = 0

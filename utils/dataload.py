@@ -245,12 +245,18 @@ class LowResolutionDataset(Dataset):
         mask = torch.from_numpy(np.expand_dims(mask, 0)).float()
 
         if self.mode == "validation":
+            original_img_path = os.path.join(
+                self.base_dir, "Train", "resized_level{}".format(self.slide_level),
+                "{}.jpg".format(self.df_images.loc[idx]["case"])
+            )
+            original_img = io.imread(original_img_path).astype(np.float32)
+
             original_mask_path = os.path.join(
                 self.base_dir, "Train", "mask_img_l{}".format(self.slide_level),
                 "{}_l{}_annotation_tumor.tif".format(self.df_images.loc[idx]["case"], self.slide_level)
             )
             original_mask = io.imread(original_mask_path).astype(np.float32)
-            return [image, mask, original_mask]
+            return [image, mask, original_img, original_mask]
         return [image, mask]
 
 

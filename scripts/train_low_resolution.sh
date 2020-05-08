@@ -4,39 +4,46 @@
 # pspnet_resnetd101b_coco, pspnet_resnetd101b_coco_encoder
 # pspnet_resnetd101b_voc, pspnet_resnetd101b_voc_encoder,
 # resnet_unet_scratch, resnet34_unet_scratch, resnet34_unet_imagenet_encoder
-model="resnet34_unet_imagenet_encoder"
+model="small_segmentation_unet"
 gpu="0,1"
 seed=2020
 train_mode="low_resolution"
 
-data_fold=0 # 0 - 1 - 2 - 3 - 4
+#data_fold=0 # 0 - 1 - 2 - 3 - 4
 
 slide_level=2
-low_res=512
+low_res=2048 # 512, 1024, 1504, 2048
+img_size=2048
+crop_size=2048
 
-epochs=30
-defrost_epoch=4
+epochs=20
+defrost_epoch=-1
 batch_size=2
 
 optimizer="adam"     # adam - over9000
 scheduler="constant" # one_cycle_lr
 min_lr=0.0001
 max_lr=0.01
-lr=0.0001 # learning_rate for conventional schedulers
+#lr=0.0001 # learning_rate for conventional schedulers
 
 # bce_dice - bce_dice_ac - bce_dice_border
 criterion="bce_dice"
 weights_criterion="0.1,0.85,0.05"
 
-img_size=512
-crop_size=512
-
-# "none" - "rotations" - "flips" - "elastic_transform" - "grid_distortion"
+for data_augmentation in "none" "combination"
+do
+# "none" - "rotations" - "vflips" - "hflips" - "elastic_transform" - "grid_distortion"
 # "shift" - "scale" - "optical_distortion" - "coarse_dropout" - "random_crops" - "downscale"
-data_augmentation="none"
+#data_augmentation="none"
+
+for data_fold in 0 1 2 3 4
+do
+
+for lr in 0.01 0.001 0.0001
+do
 
 parent_dir="lvl${slide_level}_lowres${low_res}/$model/$optimizer/${criterion}_weights${weights_criterion}"
-model_path="results/$parent_dir/datafold${data_fold}_da${data_augmentation}_minlr${min_lr}_maxlr${max_lr}"
+model_path="results/$parent_dir/datafold${data_fold}_da${data_augmentation}_minlr${min_lr}_maxlr${max_lr}_lr${lr}"
 
 echo -e "\n---- Start Initial Training ----\n"
 # --normalize
@@ -64,5 +71,13 @@ python3 -u train.py --gpu $gpu --output_dir $model_path --epochs $epochs --defro
 #  --criterion $criterion --weights_criterion $weights_criterion \
 #  --apply_swa --swa_start $swa_start --swa_freq $swa_freq --swa_lr $swa_lr \
 #  --model_checkpoint $initial_checkpoint --seed $seed
+
+done
+
+done
+
+done
+
+
 
 python3 utils/slack_message.py --msg "[PAIP 2020] Experiment finished!"
