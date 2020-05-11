@@ -138,12 +138,23 @@ Calculated using resnet34_unet_imagenet_encoder, Adam and constant learning rate
 | 512 - DA Combination - lr 0.0001   | bce_dice 0.1,0.85,0.05 |  0.7226 | 0.7074 | 0.6478 | 0.7023 | 0.6668 |  0.6893 |
 | 512 - DA Combination - lr 0.00001  | bce_dice 0.1,0.85,0.05 |  0.6837 | 0.5728 | 0.6222 | 0.6708 | 0.6141 |  0.6327 |
 
-Transformations that seem to work: Rotations, Flips, Scale, Shift. Using scratch (random weights) model:
+Transformations that seem to work: Rotations, Flips, Scale, Shift. Using scratch (**random weights**) model:
 
 | Method                             |        Criterion       |  Fold 0 | Fold 1 | Fold 2 | Fold 3 | Fold 4 | Average |
 |------------------------------------|:----------------------:|:-------:|:------:|:------:|:------:|:------:|:-------:|
 | 512 - DA None - lr 0.0001          | bce_dice 0.1,0.85,0.05 |  0.6385 | 0.5542 | 0.6138 | 0.6530 | 0.5963 |  0.6111 |
 | 512 - DA Combination - lr 0.0001   | bce_dice 0.1,0.85,0.05 |  0.6962 | 0.5559 | 0.6065 | 0.6633 | 0.5901 |  0.6224 |
+
+With smaller **random** Unet:
+
+| Method                             |        Criterion       |  Fold 0 | Fold 1 | Fold 2 | Fold 3 | Fold 4 | Average |
+|------------------------------------|:----------------------:|:-------:|:------:|:------:|:------:|:------:|:-------:|
+| 512 - DA None - lr 0.01            | bce_dice 0.1,0.85,0.05 |  0.6492 | 0.5893 | 0.6523 | 0.6853 | 0.5914 |  0.6335 |
+| 512 - DA None - lr 0.001           | bce_dice 0.1,0.85,0.05 |  0.7037 | 0.6972 | 0.6671 | 0.7768 | 0.6090 |  0.6907 |
+| 512 - DA None - lr 0.0001          | bce_dice 0.1,0.85,0.05 |  0.6464 | 0.6318 | 0.6814 | 0.6733 | 0.5852 |  0.6436 |
+| 512 - DA Combination - lr 0.01     | bce_dice 0.1,0.85,0.05 |  0.6695 | 0.6112 | 0.6242 | 0.6753 | 0.5608 |  0.6282 |
+| 512 - DA Combination - lr 0.001    | bce_dice 0.1,0.85,0.05 |  0.7385 | 0.6215 | 0.6777 | 0.6874 | 0.6031 |  0.6656 |
+| 512 - DA Combination - lr 0.0001   | bce_dice 0.1,0.85,0.05 |  0.5709 | 0.6182 | 0.6343 | 0.7219 | 0.5967 |  0.6284 |
 
 
 
